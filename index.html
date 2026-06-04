@@ -762,6 +762,7 @@
     }
     .lobby-chat-col.mobile-open {
       display: block !important;
+      animation: sheetUp .25s ease;
     }
     .lobby-chat-panel {
       height: 50dvh !important;
@@ -769,6 +770,11 @@
       border-radius: 20px 20px 0 0 !important;
       border-bottom: none !important;
     }
+    /* Reveal the in-sheet close button + anchor it to the header on mobile.
+       Two-class selector so it beats the base `.chat-sheet-close{display:none}`
+       regardless of source order (media queries don't add specificity). */
+    .lobby-chat-header, .game-chat-col .lobby-chat-header { position: relative; }
+    .lobby-chat-header .chat-sheet-close { display: flex; }
 
     /* ── GAME: single column, chat as drawer ── */
     .game-layout { grid-template-columns: 1fr !important; min-height: auto; }
@@ -781,6 +787,7 @@
     }
     .game-chat-col.mobile-open {
       display: block !important; /* override the none above */
+      animation: sheetUp .25s ease;
     }
     .game-chat-col .lobby-chat-panel {
       height: 50dvh !important;
@@ -815,10 +822,8 @@
     align-items: center; justify-content: center;
     transition: bottom .25s ease, transform .15s;
   }
-  /* When drawer is open, float button just above the 50dvh drawer */
-  .mobile-chat-toggle.drawer-open {
-    bottom: calc(50dvh + 14px);
-  }
+  /* Hide the floating button entirely while the sheet is open (sheet has its own close). */
+  .mobile-chat-toggle.drawer-open { display: none !important; }
   .mobile-chat-toggle:active { transform: scale(.92); }
   .mobile-chat-toggle.has-unread::after {
     content: '';
@@ -829,8 +834,25 @@
     border: 2px solid var(--dark);
     animation: badgePop .2s ease;
   }
-  /* Drawer backdrop */
-  .chat-backdrop { display: none; } /* disabled - no overlay */
+  /* Mobile chat sheet: dim backdrop, slide-up animation, in-sheet close button */
+  .chat-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(8,15,40,.55);
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+    z-index: 199;
+  }
+  .chat-backdrop.visible { display: block; }
+  @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .chat-sheet-close {
+    display: none;
+    position: absolute; top: 12px; right: 12px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16);
+    color: var(--text-light, #e8eeff); font-size: .85rem; font-weight: 700;
+    cursor: pointer; align-items: center; justify-content: center; z-index: 3;
+  }
+  .chat-sheet-close:active { transform: scale(.9); }
   @keyframes pulseGlow {
     0%, 100% { box-shadow: 0 0 20px var(--pink-glow); }
     50% { box-shadow: 0 0 40px var(--pink), 0 0 80px var(--pink-glow); }
@@ -1489,8 +1511,9 @@
     white-space: nowrap;
     height: 44px;
     align-items: center;
-    position: relative;
-    z-index: 95;
+    position: sticky;
+    top: 0; /* overridden by _positionBanner() to sit just below the nav */
+    z-index: 96;
   }
   #announcement-banner.visible { display: flex; }
   .banner-label {
@@ -1898,9 +1921,9 @@
       <div class="toggle-row">
         <div class="toggle-info">
           <span>🎭 Anonymous Names</span>
-          <small>Players get auto-generated names instead of choosing their own</small>
+          <small>Off for Anonymous Stories — players use their own names so you can guess who wrote what.</small>
         </div>
-        <button class="toggle on" id="toggle-anon-names" onclick="this.classList.toggle('on')"></button>
+        <button class="toggle" id="toggle-anon-names" aria-disabled="true" title="Not available for Anonymous Stories" style="opacity:.4;cursor:not-allowed;" onclick="toast('🎭 Anonymous Stories uses real names so you can vote on who wrote each story.')"></button>
       </div>
     </div>
 
@@ -1972,6 +1995,7 @@
             <button class="sidebar-tab active" id="lobby-tab-chat" onclick="switchLobbyTab('chat')">💬 Chat<span class="tab-badge" id="badge-lobby-chat" style="display:none"></span></button>
             <button class="sidebar-tab" id="lobby-tab-updates" onclick="switchLobbyTab('updates')">📋 Updates<span class="tab-badge" id="badge-lobby-updates" style="display:none"></span></button>
           </div>
+          <button class="chat-sheet-close" onclick="closeMobileChat()" aria-label="Close chat">✕</button>
         </div>
         <div class="sidebar-messages" id="lobby-chat-msgs" style="flex:1;min-height:0;"></div>
         <div class="sidebar-messages" id="lobby-update-msgs" style="flex:1;min-height:0;display:none;"></div>
@@ -2119,6 +2143,7 @@
           <button class="sidebar-tab active" id="game-tab-chat" onclick="switchGameTab('chat')">💬 Chat<span class="tab-badge" id="badge-game-chat" style="display:none"></span></button>
           <button class="sidebar-tab" id="game-tab-updates" onclick="switchGameTab('updates')">📋 Updates<span class="tab-badge" id="badge-game-updates" style="display:none"></span></button>
         </div>
+        <button class="chat-sheet-close" onclick="closeMobileChat()" aria-label="Close chat">✕</button>
       </div>
       <div class="sidebar-messages" id="sidebar-chat-msgs" style="flex:1;min-height:0;"></div>
       <div class="sidebar-messages" id="sidebar-update-msgs" style="flex:1;min-height:0;display:none;"></div>
@@ -2586,11 +2611,23 @@ function sendAnnouncement() {
   }
 }
 
+// Pin the sticky announcement banner directly beneath the nav (and timer bar if shown).
+function _positionBanner() {
+  const banner = document.getElementById('announcement-banner');
+  if (!banner) return;
+  const nav = document.querySelector('nav');
+  let top = nav ? nav.offsetHeight : 60;
+  const tb = document.getElementById('mobile-timer-bar');
+  if (tb && getComputedStyle(tb).display !== 'none') top += tb.offsetHeight;
+  banner.style.top = top + 'px';
+}
+
 function showAnnouncementBanner(text) {
   const banner = document.getElementById('announcement-banner');
   const bannerText = document.getElementById('banner-text');
   if (!banner || !bannerText) return;
   bannerText.textContent = text + '   ·   ' + text + '   ·   ' + text;
+  _positionBanner();
   banner.classList.add('visible');
   bannerText.style.animation = 'none';
   bannerText.offsetHeight;
@@ -3914,8 +3951,10 @@ function toggleMobileChat() {
 }
 function openMobileChat(col) {
   col.classList.add('mobile-open');
+  const bd = document.getElementById('chat-backdrop');
+  if (bd) bd.classList.add('visible');
   const btn = document.getElementById('mobile-chat-toggle');
-  if (btn) { btn.textContent = '✕'; btn.classList.add('drawer-open'); btn.classList.remove('has-unread'); }
+  if (btn) { btn.classList.add('drawer-open'); btn.classList.remove('has-unread'); } // drawer-open hides the FAB
   // Clear unread for whichever context we're in
   if (document.getElementById('page-lobby')?.classList.contains('active')) {
     _clearUnread('lobby-chat'); _clearUnread('lobby-updates');
@@ -3930,6 +3969,8 @@ function closeMobileChat() {
   } else {
     document.querySelectorAll('.lobby-chat-col, .game-chat-col').forEach(el => el.classList.remove('mobile-open'));
   }
+  const bd = document.getElementById('chat-backdrop');
+  if (bd) bd.classList.remove('visible');
   const btn = document.getElementById('mobile-chat-toggle');
   if (btn) { btn.textContent = '💬'; btn.classList.remove('drawer-open'); }
 }
@@ -4047,7 +4088,11 @@ function _clearUnread(key) {
 
 function _isTabVisible(panelId) {
   const el = document.getElementById(panelId);
-  return el && el.style.display !== 'none';
+  if (!el || el.style.display === 'none') return false;
+  // Hidden by a collapsed ancestor (e.g. the closed mobile chat sheet) — offsetParent
+  // is null when any ancestor is display:none, so the message counts as "unseen".
+  if (el.offsetParent === null) return false;
+  return true;
 }
 
 // ── Append a chat message ──
@@ -4289,6 +4334,7 @@ function showBanner(text) {
   bannerText.style.animation = 'none';
   bannerText.offsetHeight;
   bannerText.style.animation = 'marquee 18s linear infinite';
+  _positionBanner();
   banner.classList.add('visible');
   clearTimeout(window._bannerTimer);
   window._bannerTimer = setTimeout(closeBanner, 36000);
