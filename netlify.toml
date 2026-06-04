@@ -1,0 +1,10 @@
+# Friday's Host — static site, no build step.
+# Netlify publishes the repo root as-is. The _redirects file handles SPA routes.
+[build]
+  publish = "."
+
+# Pretty URL for the How to Play page (mirrors _redirects, kept here for clarity).
+[[redirects]]
+  from = "/howtoplay"
+  to = "/howtoplay.html"
+  status = 200

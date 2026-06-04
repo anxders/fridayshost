@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Play — Friday's Host</title>
+  <link rel="icon" type="image/png" href="data:image/png;base64,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">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dark: #080f28;
+      --dark2: #0d1b3e;
+      --pink: #ff2d78;
+      --pink-glow: rgba(255,45,120,.25);
+      --cyan: #00e5ff;
+      --cyan-glow: rgba(0,229,255,.25);
+      --yellow: #ffe600;
+      --muted: #6b82c4;
+      --text: #e8eeff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--dark);
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      background-image: radial-gradient(ellipse at 20% 20%, rgba(255,45,120,.06) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(0,229,255,.04) 0%, transparent 50%);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8,15,40,.95);
+      border-bottom: 1px solid rgba(255,45,120,.2);
+      backdrop-filter: blur(12px);
+      padding: 16px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Boogaloo', cursive;
+      font-size: 1.5rem; color: #fff; text-decoration: none;
+      letter-spacing: .5px;
+    }
+    .logo span { color: var(--pink); }
+    .nav-back {
+      font-size: .82rem; font-weight: 800; color: var(--muted);
+      text-decoration: none; transition: color .15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .nav-back:hover { color: var(--pink); }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 80px 20px 60px;
+    }
+    .hero-eyebrow {
+      font-size: .72rem; font-weight: 900; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--pink);
+      margin-bottom: 16px; display: block;
+    }
+    .hero h1 {
+      font-family: 'Boogaloo', cursive;
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      line-height: 1.05; color: #fff; margin-bottom: 18px;
+    }
+    .hero h1 span { color: var(--pink); }
+    .hero p {
+      color: var(--muted); font-size: 1rem; font-weight: 700;
+      max-width: 480px; margin: 0 auto 32px; line-height: 1.6;
+    }
+    .pink-line {
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, var(--pink), var(--cyan));
+      border-radius: 999px; margin: 0 auto 60px;
+    }
+
+    /* ── GAME SECTION ── */
+    .games-wrap {
+      max-width: 860px; margin: 0 auto; padding: 0 20px 100px;
+      display: flex; flex-direction: column; gap: 32px;
+    }
+
+    /* Live game card */
+    .game-card {
+      background: var(--dark2);
+      border: 1.5px solid rgba(255,45,120,.3);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(255,45,120,.08);
+    }
+    .game-card-header {
+      padding: 28px 32px 24px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      display: flex; align-items: flex-start; gap: 18px;
+    }
+    .game-emoji {
+      font-size: 2.6rem; flex-shrink: 0; line-height: 1;
+    }
+    .game-meta { flex: 1; }
+    .game-live-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(46,204,113,.12); border: 1.5px solid #2ecc71;
+      border-radius: 999px; padding: 3px 11px;
+      font-size: .64rem; font-weight: 900; letter-spacing: 1px;
+      text-transform: uppercase; color: #2ecc71; margin-bottom: 10px;
+    }
+    .game-live-badge::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: #2ecc71;
+      animation: pulse-dot 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .4; transform: scale(.7); }
+    }
+    .game-title {
+      font-family: 'Boogaloo', cursive;
+      font-size: 1.8rem; color: #fff; margin-bottom: 6px;
+    }
+    .game-desc {
+      color: var(--muted); font-size: .88rem;
+      font-weight: 700; line-height: 1.55;
+    }
+
+    /* Steps */
+    .steps {
+      padding: 28px 32px;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .step {
+      display: flex; gap: 18px; position: relative;
+      padding-bottom: 28px;
+    }
+    .step:last-child { padding-bottom: 0; }
+    .step-left {
+      display: flex; flex-direction: column; align-items: center;
+      flex-shrink: 0; width: 36px;
+    }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,45,120,.12);
+      border: 1.5px solid var(--pink);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Boogaloo', cursive; font-size: 1rem; color: var(--pink);
+      flex-shrink: 0;
+    }
+    .step-line {
+      width: 1.5px; flex: 1; background: rgba(255,45,120,.15);
+      margin-top: 6px;
+    }
+    .step:last-child .step-line { display: none; }
+    .step-body { padding-top: 6px; }
+    .step-heading {
+      font-weight: 900; color: #fff; font-size: .92rem; margin-bottom: 4px;
+    }
+    .step-text {
+      color: var(--muted); font-size: .82rem;
+      font-weight: 700; line-height: 1.55;
+    }
+    .step-tag {
+      display: inline-block; margin-top: 8px; padding: 3px 10px;
+      border-radius: 999px; font-size: .65rem; font-weight: 900;
+      letter-spacing: .5px; text-transform: uppercase;
+    }
+    .tag-pink { background: rgba(255,45,120,.12); color: var(--pink); border: 1px solid rgba(255,45,120,.3); }
+    .tag-cyan { background: rgba(0,229,255,.1); color: var(--cyan); border: 1px solid rgba(0,229,255,.25); }
+    .tag-yellow { background: rgba(255,230,0,.1); color: var(--yellow); border: 1px solid rgba(255,230,0,.25); }
+    .tag-green { background: rgba(46,204,113,.1); color: #2ecc71; border: 1px solid rgba(46,204,113,.25); }
+
+    /* Pack preview pills */
+    .packs-row {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+    }
+    .pack-pill {
+      padding: 5px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      font-size: .74rem; font-weight: 800; color: var(--text);
+    }
+
+    /* Scoring callout */
+    .scoring-row {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px;
+    }
+    .score-pill {
+      flex: 1; min-width: 140px;
+      padding: 12px 16px; border-radius: 12px;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+    }
+    .score-pill-label {
+      font-size: .6rem; font-weight: 900; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
+    }
+    .score-pill-val {
+      font-family: 'Boogaloo', cursive; font-size: 1.2rem; color: #fff;
+    }
+    .score-pill-val span { color: var(--pink); }
+
+    /* Coming soon cards */
+    .coming-soon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .cs-card {
+      background: var(--dark2);
+      border: 1.5px dashed #1a2a58;
+      border-radius: 16px; padding: 22px 20px;
+      display: flex; align-items: flex-start; gap: 14px;
+      opacity: .7; transition: opacity .2s, border-color .2s;
+      position: relative;
+    }
+    .cs-card:hover { opacity: .9; border-color: #2a3a70; }
+    .cs-emoji { font-size: 1.8rem; flex-shrink: 0; }
+    .cs-name { font-weight: 900; color: #fff; font-size: .9rem; margin-bottom: 4px; }
+    .cs-desc { font-size: .76rem; font-weight: 700; color: var(--muted); line-height: 1.45; }
+    .cs-badge {
+      position: absolute; top: 14px; right: 14px;
+      font-size: .58rem; font-weight: 900; letter-spacing: 1px;
+      text-transform: uppercase; padding: 3px 9px;
+      background: rgba(255,255,255,.05); border: 1px solid #2a3a70;
+      border-radius: 999px; color: var(--muted);
+    }
+
+    /* Section label */
+    .section-title {
+      font-family: 'Boogaloo', cursive;
+      font-size: 1.5rem; color: #fff; margin-bottom: 8px;
+    }
+    .section-sub {
+      color: var(--muted); font-size: .84rem; font-weight: 700;
+      margin-bottom: 22px; line-height: 1.5;
+    }
+
+    /* CTA */
+    .cta-wrap {
+      text-align: center; padding: 60px 20px 80px;
+      background: linear-gradient(180deg, transparent, rgba(255,45,120,.04));
+    }
+    .cta-wrap h2 {
+      font-family: 'Boogaloo', cursive; font-size: 2.2rem;
+      color: #fff; margin-bottom: 10px;
+    }
+    .cta-wrap p {
+      color: var(--muted); font-weight: 700; font-size: .9rem;
+      margin-bottom: 28px;
+    }
+    .btn-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--pink); color: #fff;
+      font-family: 'Nunito', sans-serif; font-weight: 900;
+      font-size: .95rem; padding: 14px 32px; border-radius: 999px;
+      text-decoration: none; border: none; cursor: pointer;
+      box-shadow: 0 0 30px rgba(255,45,120,.35);
+      transition: all .2s;
+    }
+    .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(255,45,120,.5); }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255,255,255,.05);
+      padding: 24px 40px; text-align: center;
+      font-size: .75rem; font-weight: 700; color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="/">Friday<span>'s</span> Host</a>
+  <a class="nav-back" href="/">← Back to Home</a>
+</nav>
+
+<section class="hero">
+  <span class="hero-eyebrow">The Game</span>
+  <h1>How to <span>Play</span></h1>
+  <p>A party game where anonymity is the point — write, bluff, and vote your way to glory.</p>
+  <div class="pink-line"></div>
+</section>
+
+<div class="games-wrap">
+
+  <!-- ── ANONYMOUS STORIES ── -->
+  <div class="game-card">
+    <div class="game-card-header">
+      <div class="game-emoji">🕵️</div>
+      <div class="game-meta">
+        <div class="game-live-badge">Live Now</div>
+        <div class="game-title">Anonymous Stories</div>
+        <div class="game-desc">A prompt appears — everyone writes something in response, anonymously. Then the whole room votes on who they think wrote each one. The sneakier your style, the harder you are to catch.</div>
+      </div>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">1</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-heading">Host picks a pack &amp; starts the room</div>
+          <div class="step-text">The host creates a room, picks a game pack that sets the vibe, and shares the room code with everyone.</div>
+          <div class="packs-row">
+            <span class="pack-pill">🎲 Safe Chaos</span>
+            <span class="pack-pill">🔥 After Hours</span>
+            <span class="pack-pill">💀 Unhinged</span>
+            <span class="pack-pill">💌 Wholesome</span>
+            <span class="pack-pill">🎬 Hollywood</span>
+            <span class="pack-pill">🌀 Twisted Reality</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">2</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-heading">A prompt drops — everyone writes</div>
+          <div class="step-text">Each round, a prompt appears for everyone. You write whatever feels right — go obvious, go subtle, go completely off the wall. The only rule is nobody can see who wrote what. Your job is to blend in or throw people off.</div>
+          <span class="step-tag tag-pink">Anonymous</span>
+          <span class="step-tag tag-cyan">Timed</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">3</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-heading">The room votes — who wrote this?</div>
+          <div class="step-text">All responses are shown one by one — no names attached. Everyone votes on who they think wrote it. No hints, no conferring — just your gut and whatever you know about your friends.</div>
+          <span class="step-tag tag-yellow">🗳 Live Vote</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">4</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-heading">Points &amp; the big reveal</div>
+          <div class="step-text">Authors earn points for every wrong guess. Guessers earn points for sniffing out the right author. At the end of each round, the truth comes out.</div>
+          <div class="scoring-row">
+            <div class="score-pill">
+              <div class="score-pill-label">Writer earns</div>
+              <div class="score-pill-val"><span>+800</span> per wrong guess</div>
+            </div>
+            <div class="score-pill">
+              <div class="score-pill-label">Correct guess</div>
+              <div class="score-pill-val"><span>+800</span> points</div>
+            </div>
+            <div class="score-pill">
+              <div class="score-pill-label">Wrong guess</div>
+              <div class="score-pill-val"><span>+500</span> consolation</div>
+            </div>
+            <div class="score-pill">
+              <div class="score-pill-label">Nobody guesses you</div>
+              <div class="score-pill-val"><span>×2</span> multiplier 🔥</div>
+            </div>
+          </div>
+          <span class="step-tag tag-green" style="margin-top:12px;">Repeat for all rounds → winner takes the crown</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── COMING SOON ── -->
+  <div>
+    <div class="section-title">More Games Coming</div>
+    <div class="section-sub">Anonymous Stories is just the start. These modes are in the works — each one a completely different way to make your friends cringe.</div>
+    <div class="coming-soon-grid">
+      <div class="cs-card">
+        <div class="cs-emoji">🗳</div>
+        <div>
+          <div class="cs-name">Who Would…</div>
+          <div class="cs-desc">The room votes on who's most likely to do something chaotic. Democracy, but make it personal.</div>
+        </div>
+        <span class="cs-badge">Soon</span>
+      </div>
+      <div class="cs-card">
+        <div class="cs-emoji">😭</div>
+        <div>
+          <div class="cs-name">Confessions</div>
+          <div class="cs-desc">Drop anonymous confessions. The room guesses who wrote what. Some truths hit different.</div>
+        </div>
+        <span class="cs-badge">Soon</span>
+      </div>
+      <div class="cs-card">
+        <div class="cs-emoji">🖼</div>
+        <div>
+          <div class="cs-name">Caption This</div>
+          <div class="cs-desc">One image, everyone writes a caption. The funniest one wins — voted by the room.</div>
+        </div>
+        <span class="cs-badge">Soon</span>
+      </div>
+      <div class="cs-card">
+        <div class="cs-emoji">🤔</div>
+        <div>
+          <div class="cs-name">Hot Take</div>
+          <div class="cs-desc">Submit your spiciest opinion. The room reacts. Defend it or get roasted — your choice.</div>
+        </div>
+        <span class="cs-badge">Soon</span>
+      </div>
+      <div class="cs-card">
+        <div class="cs-emoji">📖</div>
+        <div>
+          <div class="cs-name">Finish the Story</div>
+          <div class="cs-desc">One opening line, everyone writes the next sentence. The story goes sideways fast.</div>
+        </div>
+        <span class="cs-badge">Soon</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── CTA ── -->
+<div class="cta-wrap">
+  <h2>Ready to play?</h2>
+  <p>Grab your friends — all you need is a phone and zero shame.</p>
+  <a class="btn-cta" href="/">🎮 Host a Room</a>
+</div>
+
+<footer>
+  © 2026 Friday's Host · <a href="/" style="color:var(--muted);text-decoration:none;">Home</a>
+</footer>
+
+</body>
+</html>
