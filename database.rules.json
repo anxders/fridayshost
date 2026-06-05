@@ -68,6 +68,14 @@
           "$pid": { ".validate": "newData.isString() && newData.val().length <= 64" }
         },
 
+        "leaderReactions": {
+          "$targetId": {
+            "$emojiIdx": {
+              "$reactorId": { ".validate": "newData.isBoolean()" }
+            }
+          }
+        },
+
         "reactions": {
           "$key": {
             "playerId": { ".validate": "newData.isString() && newData.val().length <= 64" },
