@@ -27,6 +27,9 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  /* Canvas/overscroll color — defaults to the dark home theme so the rubber-band
+     area never flashes white. showPage() updates it to match the active page. */
+  html { background: var(--night); }
   body {
     font-family: 'Nunito', sans-serif;
     background: var(--bg);
@@ -1435,6 +1438,7 @@
   .react-pill.empty { opacity:.45; }
   .host-tip-box { background:rgba(255,45,120,.06); border:1px solid rgba(255,45,120,.2); border-radius:12px; padding:14px 18px; font-size:.82rem; color:var(--muted); font-weight:600; margin-bottom:20px; }
   .host-tip-box strong { color:var(--pink); }
+  .round-end-wait { color:var(--muted); font-weight:700; font-size:.9rem; }
 
   /* Transition screen */
   .transition-screen { text-align:center; padding:80px 20px; }
@@ -1585,6 +1589,16 @@
   }
   .modal textarea:focus { border-color: var(--pink); box-shadow: 0 0 16px rgba(255,45,120,.2); }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* Policy modals (Rules & Safety, Terms & Privacy) */
+  .policy-modal { width: min(560px, 92vw); border-color: #2a3a70; box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+  .policy-body { max-height: 60vh; overflow-y: auto; margin: 6px 0 18px; padding-right: 6px; }
+  .policy-body p { color: #c3cdf0; font-size: .9rem; line-height: 1.6; font-weight: 600; margin-bottom: 12px; }
+  .policy-body ul { list-style: none; padding: 0; margin: 0 0 6px; display: flex; flex-direction: column; gap: 10px; }
+  .policy-body li { color: #c3cdf0; font-size: .88rem; line-height: 1.55; font-weight: 600; padding-left: 18px; position: relative; }
+  .policy-body li::before { content: '›'; position: absolute; left: 3px; color: var(--pink); font-weight: 900; }
+  .policy-body strong { color: #fff; }
+  .policy-sub { font-family: 'Boogaloo', cursive; color: #fff; font-size: 1.05rem; margin: 16px 0 10px; }
 
   #game-ended-overlay { display: none; }
   #game-ended-overlay.visible { display: flex !important; animation: fadeIn .4s ease; }
@@ -1898,7 +1912,6 @@
   <!-- ── MODE SELECT (FNF week-select) ── -->
   <section class="home-section">
     <div class="section-head">
-      <span class="section-kicker">▲ ◆ ● ■</span>
       <h2 class="section-title">Pick your mode</h2>
       <p class="section-sub">One's live. The rest are warming up.</p>
     </div>
@@ -1946,9 +1959,9 @@
   <section class="home-section">
     <div class="section-head"><h2 class="section-title">How it works</h2></div>
     <div class="beats">
-      <div class="beat"><span class="beat-shape tri">▲</span><span class="beat-num">1</span><h4>Host a room</h4><p>Pick a pack, share the code.</p></div>
-      <div class="beat"><span class="beat-shape dia">◆</span><span class="beat-num">2</span><h4>Everyone writes</h4><p>Answer the prompt — anonymously.</p></div>
-      <div class="beat"><span class="beat-shape cir">●</span><span class="beat-num">3</span><h4>Vote &amp; roast</h4><p>Guess who wrote what. Rack up points.</p></div>
+      <div class="beat"><span class="beat-num">1</span><h4>Host a room</h4><p>Pick a pack, share the code.</p></div>
+      <div class="beat"><span class="beat-num">2</span><h4>Everyone writes</h4><p>Answer the prompt — anonymously.</p></div>
+      <div class="beat"><span class="beat-num">3</span><h4>Vote &amp; roast</h4><p>Guess who wrote what. Rack up points.</p></div>
     </div>
     <div class="beats-cta"><a href="/howtoplay" class="btn btn-dark">📖 Full rules →</a></div>
   </section>
@@ -1957,10 +1970,10 @@
   <section class="home-section value-band">
     <h2 class="value-headline">No app. No accounts.<br><span class="line2">Just a code.</span></h2>
     <div class="value-grid">
-      <div class="value-item"><span class="vshape tri">▲</span><strong>Instant</strong><p>Join from any phone in seconds.</p></div>
-      <div class="value-item"><span class="vshape dia">◆</span><strong>Anonymous</strong><p>The stories are secret — guessing is the fun.</p></div>
-      <div class="value-item"><span class="vshape cir">●</span><strong>Live scoring</strong><p>Points for deception and detection.</p></div>
-      <div class="value-item"><span class="vshape sq">■</span><strong>Up to 100</strong><p>Tiny hangs or big parties.</p></div>
+      <div class="value-item"><span class="vshape">⚡</span><strong>Instant</strong><p>Join from any phone in seconds.</p></div>
+      <div class="value-item"><span class="vshape">🕵️</span><strong>Anonymous</strong><p>The stories are secret — guessing is the fun.</p></div>
+      <div class="value-item"><span class="vshape">🏆</span><strong>Live scoring</strong><p>Points for deception and detection.</p></div>
+      <div class="value-item"><span class="vshape">🎉</span><strong>Up to 100</strong><p>Tiny hangs or big parties.</p></div>
     </div>
   </section>
 
@@ -1977,9 +1990,9 @@
   <footer class="home-footer">
     <a href="/howtoplay" class="footer-how-link">How it works</a>
     <span class="footer-how-link">·</span>
-    <a href="#">Rules &amp; Safety</a>
+    <a href="#" onclick="openPolicy('rules');return false;">Rules &amp; Safety</a>
     <span>·</span>
-    <a href="#">Terms &amp; Privacy</a>
+    <a href="#" onclick="openPolicy('terms');return false;">Terms &amp; Privacy</a>
     <span>·</span>
     <span>© 2026 Friday's Host</span>
     <span class="version-tag">v0.8.2-beta</span>
@@ -2510,10 +2523,7 @@
     <div class="host-tip-box">
       <strong class="host-only">👑 Host tip:</strong> Take a moment to roast the stories before continuing. Use the announcement bar if you want everyone to know your thoughts.
     </div>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-dark" onclick="showPage('lobby')">← Back to Lobby</button>
-      <button class="btn btn-pink host-only" id="next-round-btn" onclick="nextRound()">Start Round 2 →</button>
-    </div>
+    <div id="round-end-actions" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:center;"></div>
   </div>
 
   <!-- ─── HOST WRITING PROMPT (custom prompts mode) ─── -->
@@ -2607,10 +2617,74 @@
   </div>
 </div>
 
+<!-- Rules & Safety -->
+<div class="modal-overlay" id="policy-rules" onclick="if(event.target===this)closePolicy()">
+  <div class="modal policy-modal">
+    <h3>🛡️ Rules &amp; Safety</h3>
+    <p>Friday's Host is for having fun with people you actually know. Keep it that way.</p>
+    <div class="policy-body">
+      <ul>
+        <li><strong>Be a decent human</strong> — no harassment, hate speech, threats, or slurs aimed at anyone.</li>
+        <li><strong>Anonymous isn't consequence-free</strong> — hosts can remove anyone, and rooms are moderated.</li>
+        <li><strong>Don't share private info</strong> — real names, numbers, or addresses without consent.</li>
+        <li><strong>18+ packs are for adults only.</strong> Never involve minors in adult content. Sexualizing a minor means a permanent ban and a report to authorities.</li>
+        <li><strong>No illegal content, doxxing, or spam.</strong></li>
+        <li>Everything you write is shown to <strong>everyone in your room</strong> — play with people you trust.</li>
+        <li>See something wrong? Ask your host to remove them.</li>
+      </ul>
+      <p style="margin-bottom:0;">By playing, you agree to keep it fun and follow these rules.</p>
+    </div>
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn btn-pink" onclick="closePolicy()">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- Terms & Privacy -->
+<div class="modal-overlay" id="policy-terms" onclick="if(event.target===this)closePolicy()">
+  <div class="modal policy-modal">
+    <h3>📄 Terms &amp; Privacy</h3>
+    <p>The short version — in plain language.</p>
+    <div class="policy-body">
+      <div class="policy-sub">The basics</div>
+      <ul>
+        <li>Friday's Host is a <strong>free beta</strong>, provided "as is" — things may break or change, and we can end the beta anytime.</li>
+        <li><strong>You're responsible for what you write.</strong> Don't use it for anything illegal or harmful.</li>
+      </ul>
+      <div class="policy-sub">Your data</div>
+      <ul>
+        <li><strong>No accounts, no passwords, no email</strong> needed to play.</li>
+        <li>We store only what runs the game: room code, your chosen name and emoji, your submissions, votes, and chat.</li>
+        <li>Your name and submissions are <strong>visible to everyone in your room</strong> — that's the game.</li>
+        <li>We <strong>don't sell your data</strong> or run ad trackers.</li>
+        <li>It's a beta — <strong>don't post anything you'd hate to see public</strong>, and rooms or data may be cleared at any time.</li>
+      </ul>
+    </div>
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn btn-pink" onclick="closePolicy()">Got it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Policy modals (Rules & Safety, Terms & Privacy) ──
+function openPolicy(which) {
+  closePolicy();
+  const el = document.getElementById(which === 'terms' ? 'policy-terms' : 'policy-rules');
+  if (el) el.classList.add('open');
+}
+function closePolicy() {
+  document.getElementById('policy-rules')?.classList.remove('open');
+  document.getElementById('policy-terms')?.classList.remove('open');
+}
+</script>
+
 <script>
 // ─── PAGE ROUTING ───
 function showPage(id) {
   if (id !== 'game') stopLeaderReactPoll(); // leaderboard reactions only live on the round-end screen
+  // Match the overscroll/canvas color to the active page's theme (no white flash)
+  document.documentElement.style.background = ({ home: 'var(--night)', game: 'var(--dark)' })[id] || 'var(--bg)';
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active', 'entering'));
   const target = document.getElementById('page-' + id);
   target.classList.add('active', 'entering');
@@ -5059,10 +5133,30 @@ function showRoundEnd() {
       <div class="lb-react-strip" id="reacts-${p.id}"></div>
     </div>
   `).join('');
-  document.getElementById('next-round-btn').textContent =
-    isLast ? '🏁 Back to Home' : `Start Round ${GAME.round + 1} →`;
+  renderRoundEndActions(isLast);
   renderLeaderReactions();
   if (ROOM_CODE) startLeaderReactPoll();
+}
+
+// Build the round-end action row. Never routes to the lobby mid-game (the lobby
+// only exists pre-game, and its status poll would bounce you back into the round).
+function renderRoundEndActions(isLast) {
+  const wrap = document.getElementById('round-end-actions');
+  if (!wrap) return;
+  const inRoom = !!ROOM_CODE;
+  if (!isLast) {
+    if (!inRoom || isHost) {
+      wrap.innerHTML = `<button class="btn btn-pink" onclick="nextRound()">Start Round ${GAME.round + 1} →</button>`;
+    } else {
+      wrap.innerHTML = `<p class="round-end-wait">⏳ Waiting for the host to start round ${GAME.round + 1}…</p>`;
+    }
+  } else {
+    if (!inRoom || isHost) {
+      wrap.innerHTML = `<button class="btn btn-pink" onclick="showPage('home')">🏠 Back to Home</button>`;
+    } else {
+      wrap.innerHTML = `<p class="round-end-wait">🎉 Thanks for playing!</p><button class="btn btn-dark" onclick="showPage('home')">🏠 Leave</button>`;
+    }
+  }
 }
 
 // ── Leaderboard reactions (Discord-style pills, synced via Firebase) ──
