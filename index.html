@@ -4038,6 +4038,7 @@ async function hostEndGame() {
       isAnnouncement: true
     });
     await fbSet(`rooms/${ROOM_CODE}/status`, 'ended');
+    scheduleRoomDeletion(ROOM_CODE);
   }
   // Host goes straight home — overlay is for the players who get booted
   clearAllPolling();
@@ -4055,11 +4056,23 @@ function clearAllPolling() {
   clearInterval(_submissionPollInterval);
   offAllDB();
 }
+// After the host ends a game we mark it 'ended' so players get the signal,
+// then delete the whole room a bit later so it doesn't pile up in the DB.
+// The delay comfortably exceeds the non-host 3s status poll.
+function scheduleRoomDeletion(code) {
+  if (!code) return;
+  setTimeout(() => { fbRemove(`rooms/${code}`).catch(() => {}); }, 20000);
+}
+
 async function leaveRoom() {
   clearAllPolling();
   if (!ROOM_CODE) return;
-  if (isHost) { await fbSet(`rooms/${ROOM_CODE}/status`, 'ended'); }
-  else { await fbRemove(`rooms/${ROOM_CODE}/players/${MY_ID}`); }
+  if (isHost) {
+    await fbSet(`rooms/${ROOM_CODE}/status`, 'ended');
+    scheduleRoomDeletion(ROOM_CODE);
+  } else {
+    await fbRemove(`rooms/${ROOM_CODE}/players/${MY_ID}`);
+  }
   ROOM_CODE = null;
 }
 
