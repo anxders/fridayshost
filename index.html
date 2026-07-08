@@ -3351,51 +3351,93 @@ function setHostUI(host) {
 // ════════════════════════════════════════════════════════════════
 
 const FB_BASE = 'https://friday-s-host-default-rtdb.firebaseio.com';
+const FB_API_KEY = 'AIzaSyCufTxeaQxjDfKIH5H5-5Q0iB4BM8vU_zM'; // public Firebase Web API key (safe in client)
 
-// Persistent player ID
-let MY_ID = sessionStorage.getItem('fridayPID');
-if (!MY_ID) {
-  MY_ID = 'p' + Date.now().toString(36) + Math.random().toString(36).substr(2,5);
-  sessionStorage.setItem('fridayPID', MY_ID);
+// ── Anonymous auth ─────────────────────────────────────────
+// Each device gets a persistent anonymous Firebase user; its uid becomes MY_ID,
+// so the security rules can enforce "you can only act as yourself".
+let MY_ID = localStorage.getItem('fridayUid') || null;
+let _idToken = null;
+let _refreshToken = localStorage.getItem('fridayRefreshToken');
+let _authReady = null;
+let _refreshTimer = null;
+
+function _applyTokens(idToken, refreshToken, uid, expiresIn) {
+  _idToken = idToken;
+  _refreshToken = refreshToken;
+  MY_ID = uid;
+  try {
+    localStorage.setItem('fridayRefreshToken', refreshToken);
+    localStorage.setItem('fridayUid', uid);
+  } catch(_) {}
+  // Refresh a few minutes before the 1h token expiry
+  const secs = Math.max(60, (parseInt(expiresIn || '3600', 10) - 300));
+  clearTimeout(_refreshTimer);
+  _refreshTimer = setTimeout(() => { _refreshIdToken().catch(() => {}); }, secs * 1000);
 }
+async function _anonSignUp() {
+  const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FB_API_KEY}`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ returnSecureToken: true })
+  });
+  const j = await r.json();
+  if (!r.ok || j.error) throw new Error('anon signup failed');
+  _applyTokens(j.idToken, j.refreshToken, j.localId, j.expiresIn);
+}
+async function _refreshIdToken() {
+  if (!_refreshToken) return _anonSignUp();
+  const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FB_API_KEY}`, {
+    method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'},
+    body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(_refreshToken)}`
+  });
+  const j = await r.json();
+  if (!r.ok || j.error) { // stale/invalid refresh token → start a fresh anonymous user
+    try { localStorage.removeItem('fridayRefreshToken'); localStorage.removeItem('fridayUid'); } catch(_) {}
+    _refreshToken = null;
+    return _anonSignUp();
+  }
+  _applyTokens(j.id_token, j.refresh_token, j.user_id, j.expires_in);
+}
+function ensureAuth() {
+  if (_authReady) return _authReady;
+  _authReady = (_refreshToken ? _refreshIdToken() : _anonSignUp())
+    .catch(() => _anonSignUp())
+    .catch(e => { console.error('Auth failed:', e); });
+  return _authReady;
+}
+ensureAuth(); // start signing in immediately on load
 
 let ROOM_CODE = null;
 let _sseStreams = []; // active EventSource connections
 
-// ── REST helpers ───────────────────────────────────────────
+// ── REST helpers (every call carries the auth token; retry once on 401) ──
+function _fbUrl(path) { return `${FB_BASE}/${path}.json${_idToken ? '?auth=' + _idToken : ''}`; }
+async function _fbFetch(path, opts) {
+  await ensureAuth();
+  let r = await fetch(_fbUrl(path), opts);
+  if (r.status === 401) { await _refreshIdToken().catch(() => {}); r = await fetch(_fbUrl(path), opts); }
+  return r;
+}
 async function fbGet(path) {
-  const r = await fetch(`${FB_BASE}/${path}.json`);
+  const r = await _fbFetch(path);
   return r.json();
 }
 async function fbSet(path, data) {
-  await fetch(`${FB_BASE}/${path}.json`, {
-    method: 'PUT',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(data)
-  });
+  await _fbFetch(path, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
 }
 async function fbUpdate(path, data) {
-  await fetch(`${FB_BASE}/${path}.json`, {
-    method: 'PATCH',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(data)
-  });
+  await _fbFetch(path, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
 }
 async function fbPush(path, data) {
-  const r = await fetch(`${FB_BASE}/${path}.json`, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(data)
-  });
+  const r = await _fbFetch(path, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
   return r.json(); // returns {name: "-Nxxx..."}
 }
 async function fbRemove(path) {
-  await fetch(`${FB_BASE}/${path}.json`, { method: 'DELETE' });
+  await _fbFetch(path, { method: 'DELETE' });
 }
 
-// ── Server-Sent Events listener ────────────────────────────
+// ── Server-Sent Events listener (currently unused; kept auth-aware) ──
 function fbListen(path, cb) {
-  const es = new EventSource(`${FB_BASE}/${path}.json`);
+  const es = new EventSource(`${FB_BASE}/${path}.json${_idToken ? '?auth=' + _idToken : ''}`);
   es.addEventListener('put', e => {
     try { cb(JSON.parse(e.data)); } catch(_) {}
   });
@@ -3423,6 +3465,8 @@ async function createRoom() {
   const orig = btn ? btn.textContent : '';
   if (btn) { btn.textContent = 'Creating…'; btn.disabled = true; }
   try {
+    await ensureAuth(); // need our uid before writing hostId/players
+    if (!MY_ID) throw new Error('Could not sign in — check your connection');
     const code = await makeUniqueCode();
     ROOM_CODE = code;
     const settings = collectSettings();
@@ -3486,6 +3530,8 @@ async function joinRoomFB() {
   const btn = document.querySelector('#page-join .btn-pink');
   if (btn) { btn.textContent = 'Joining…'; btn.disabled = true; }
   try {
+    await ensureAuth(); // need our uid before joining
+    if (!MY_ID) throw new Error('sign_in');
     const room = await fbGet(`rooms/${code}`);
     if (!room) throw new Error('not_found');
     if (room.status === 'playing') throw new Error('in_progress');
