@@ -32,18 +32,18 @@
   html { background: var(--night); }
   body {
     font-family: 'Nunito', sans-serif;
-    background: var(--bg);
+    background: var(--night);
     min-height: 100vh;
     overflow-x: hidden;
   }
 
-  /* ─── BG GRID ─── */
+  /* ─── BG GRID (faint texture on the dark create/join/lobby pages) ─── */
   body::before {
     content: '';
     position: fixed; inset: 0; z-index: 0;
     background-image:
-      linear-gradient(rgba(13,27,62,.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(13,27,62,.06) 1px, transparent 1px);
+      linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none;
   }
@@ -281,19 +281,7 @@
     padding: 28px;
     position: relative; overflow: hidden;
   }
-  .card-glow-pink::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top right, rgba(255,45,120,.07), transparent 70%);
-    pointer-events: none;
-  }
-  .card-glow-cyan::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(circle at top left, rgba(0,229,255,.07), transparent 70%);
-    pointer-events: none;
-  }
+  /* card-glow-* kept as no-op hooks (radial glows removed per design guidelines) */
 
   /* ─── CREATE ROOM ─── */
   .create-layout {
@@ -443,7 +431,7 @@
   .input-wrap input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 20px rgba(255,45,120,.2); }
   .input-wrap input::placeholder { color: #3a4a7a; letter-spacing: 0; }
 
-  .room-code-input { font-size: 1.6rem !important; letter-spacing: 8px !important; text-align: center; text-transform: uppercase; }
+  .room-code-input { font-size: 1.6rem !important; letter-spacing: 2px !important; text-align: center; text-transform: uppercase; }
 
   .name-gen-btn {
     width: 100%; padding: 12px;
@@ -2684,7 +2672,7 @@ function closePolicy() {
 function showPage(id) {
   if (id !== 'game') stopLeaderReactPoll(); // leaderboard reactions only live on the round-end screen
   // Match the overscroll/canvas color to the active page's theme (no white flash)
-  document.documentElement.style.background = ({ home: 'var(--night)', game: 'var(--dark)' })[id] || 'var(--bg)';
+  document.documentElement.style.background = id === 'game' ? 'var(--dark)' : 'var(--night)';
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active', 'entering'));
   const target = document.getElementById('page-' + id);
   target.classList.add('active', 'entering');
