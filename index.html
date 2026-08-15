@@ -2718,7 +2718,7 @@ function showPage(id) {
   if (id === 'join' || id === 'create') { showMobileChatToggle(false); closeMobileChat(); stopLobbyMusic(); }
   if (id === 'create' && !inActiveRoom) {
     const btn = document.getElementById('create-room-btn');
-    if (btn) btn.textContent = 'Create Room →';
+    if (btn) { btn.textContent = 'Create Room →'; btn.disabled = false; } // re-enable after a prior create
     const backBtn = document.getElementById('settings-back-btn');
     if (backBtn) backBtn.style.display = '';
   }
@@ -3321,6 +3321,7 @@ let writingTimers = [];
 
 let isHost = true;
 let inActiveRoom = false;
+let ROOM_SETTINGS = null; // the current room's settings (shared source of truth for the lobby chips)
 
 function setHostUI(host) {
   // Lobby host panel
@@ -3458,6 +3459,7 @@ async function createRoom() {
     const code = await makeUniqueCode();
     ROOM_CODE = code;
     const settings = collectSettings();
+    ROOM_SETTINGS = settings;
     await fbSet(`rooms/${code}`, {
       hostId: MY_ID,
       status: 'lobby',
@@ -3504,9 +3506,10 @@ function collectSettings() {
   const maxPlayers = maxSel ? (parseInt(maxSel.value) || 10) : 10;
   const anonMode = document.getElementById('toggle-anon-names')?.classList.contains('on') ?? true;
   const is18Plus = document.getElementById('toggle-18')?.classList.contains('on') ?? false;
-  const packBtn  = document.querySelector('.pack-btn.selected');
+  const packBtn  = document.querySelector('.pack-btn.active');
   const pack     = packBtn?.dataset?.pack || 'general';
-  const packName = packBtn?.textContent?.trim() || 'General Pack';
+  // innerText first line = the pack name (strip the "<small>" subtitle)
+  const packName = packBtn ? packBtn.innerText.split('\n')[0].trim() : '🎲 Safe Chaos Pack';
   return { rounds, maxPlayers, anonMode, is18Plus, pack, packName };
 }
 
@@ -3529,6 +3532,7 @@ async function joinRoomFB() {
     const kicked = await fbGet(`rooms/${code}/kicked/${MY_ID}`);
     if (kicked) throw new Error('kicked');
     ROOM_CODE = code;
+    ROOM_SETTINGS = room.settings || null;
     isHost = false;
     await fbSet(`rooms/${code}/players/${MY_ID}`, {
       name: 'Player ' + (playerCount + 1),
@@ -3558,10 +3562,31 @@ function heroJoin() {
 // ── Lobby listeners ────────────────────────────────────────
 let _playerPollInterval = null;
 let _statusPollInterval = null;
+let _chatPollInterval = null;
 let _chatLastKey = null;
+let _chatRenderedRoom = null;
+
+// Wipe the chat + updates panels so a new room never shows a previous room's messages.
+function resetRoomChat() {
+  _chatLastKey = null;
+  chatHistory = [];
+  ['sidebar-chat-msgs','lobby-chat-msgs','sidebar-update-msgs','lobby-update-msgs'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.innerHTML = '';
+  });
+  ['lobby-chat','lobby-updates','game-chat','game-updates'].forEach(k => _clearUnread(k));
+}
 
 function setupRoomListeners() {
   if (!ROOM_CODE) return;
+  // Never stack pollers when re-entering the lobby
+  clearInterval(_playerPollInterval);
+  clearInterval(_statusPollInterval);
+  clearInterval(_chatPollInterval);
+  // Fresh room → clean chat (but don't wipe when just re-viewing the same lobby, e.g. after editing settings)
+  if (ROOM_CODE !== _chatRenderedRoom) {
+    resetRoomChat();
+    _chatRenderedRoom = ROOM_CODE;
+  }
 
   // Poll players every 2s
   _playerPollInterval = setInterval(async () => {
@@ -3595,7 +3620,7 @@ function setupRoomListeners() {
   }, 2000);
 
   // Poll chat every 2s
-  setInterval(async () => {
+  _chatPollInterval = setInterval(async () => {
     if (!ROOM_CODE) return;
     const chat = await fbGet(`rooms/${ROOM_CODE}/chat`);
     if (!chat) return;
@@ -4000,7 +4025,7 @@ function showTwoPlayerWarning() {
     }
     GAME = {
       phase:'writing', round:1, totalRounds,
-      packName: document.querySelector('.pack-btn.selected')?.textContent?.trim() || '',
+      packName: document.querySelector('.pack-btn.active')?.innerText.split('\n')[0].trim() || '',
       prompt: prompts[0] || 'What is your biggest party secret?',
       roundPrompts: prompts.slice(0, totalRounds),
       stories:[], currentStoryIdx:0,
@@ -4040,6 +4065,7 @@ async function hostEndGame() {
 function clearAllPolling() {
   clearInterval(_playerPollInterval);
   clearInterval(_statusPollInterval);
+  clearInterval(_chatPollInterval);
   clearInterval(_gamePollInterval);
   clearInterval(_submissionPollInterval);
   offAllDB();
@@ -4054,6 +4080,9 @@ function scheduleRoomDeletion(code) {
 
 async function leaveRoom() {
   clearAllPolling();
+  resetRoomChat();
+  _chatRenderedRoom = null;
+  ROOM_SETTINGS = null;
   if (!ROOM_CODE) return;
   if (isHost) {
     await fbSet(`rooms/${ROOM_CODE}/status`, 'ended');
@@ -4701,9 +4730,14 @@ function goEditSettings() {
 function returnToRoom() {
   window._editingActiveRoom = false;
   const btn = document.getElementById('create-room-btn');
-  if (btn) btn.textContent = 'Create Room →';
+  if (btn) { btn.textContent = 'Create Room →'; btn.disabled = false; }
   const backBtn = document.getElementById('settings-back-btn');
   if (backBtn) backBtn.style.display = '';
+  // Persist any settings the host changed while editing, so the lobby reflects them
+  if (ROOM_CODE && isHost) {
+    ROOM_SETTINGS = collectSettings();
+    fbSet(`rooms/${ROOM_CODE}/settings`, ROOM_SETTINGS);
+  }
   showPage('lobby');
 }
 
@@ -5483,30 +5517,37 @@ function updateLobbyChips() {
   const el = document.getElementById('lobby-chips');
   if (!el) return;
   const chips = [];
+  const s = ROOM_SETTINGS || {};
 
-  // Always Anonymous Stories now (only live game)
-  const activePack = document.querySelector('.pack-btn.active');
-  const packName = activePack ? activePack.innerText.split('\n')[0].trim() : '🎲 Safe Chaos Pack';
   chips.push({ label: '🕵️ Anonymous Stories', style: 'active' });
+
+  // Pack — prefer the room's shared setting so every player (host + joiners) sees the real pack
+  let packName = s.packName;
+  if (!packName) {
+    const activePack = document.querySelector('.pack-btn.active');
+    packName = activePack ? activePack.innerText.split('\n')[0].trim() : '🎲 Safe Chaos Pack';
+  }
   chips.push({ label: packName, style: 'active' });
 
   // Rounds
-  const roundsSel = document.getElementById('rounds-select');
-  let roundsLabel = '5 Rounds';
-  if (roundsSel) {
-    if (roundsSel.value === 'Custom') {
-      const customVal = document.getElementById('custom-rounds-input')?.value || '?';
-      roundsLabel = `${customVal} Rounds`;
-    } else {
-      roundsLabel = roundsSel.value.replace(' rounds', ' Rounds');
+  let roundsLabel;
+  if (s.rounds) {
+    roundsLabel = `${s.rounds} Rounds`;
+  } else {
+    const roundsSel = document.getElementById('rounds-select');
+    roundsLabel = '5 Rounds';
+    if (roundsSel) {
+      roundsLabel = roundsSel.value === 'Custom'
+        ? `${document.getElementById('custom-rounds-input')?.value || '?'} Rounds`
+        : roundsSel.value.replace(' rounds', ' Rounds');
     }
   }
   chips.push({ label: roundsLabel, style: '' });
 
   // 18+
-  if (document.getElementById('toggle-18')?.classList.contains('on')) {
-    chips.push({ label: '🔞 18+', style: 'adult' });
-  }
+  const is18 = (s.is18Plus !== undefined) ? s.is18Plus
+             : document.getElementById('toggle-18')?.classList.contains('on');
+  if (is18) chips.push({ label: '🔞 18+', style: 'adult' });
 
   el.innerHTML = chips.map(c =>
     `<span class="info-chip ${c.style}">${c.label}</span>`
